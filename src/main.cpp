@@ -27,10 +27,9 @@ void loop() {
   }
 
   while(!mqtt_sender.connect()){
-    Serial.println("gay");
+    Serial.println("Trying to connect to server");
     delay(500);
   }
-  Serial.println("efter connect");
   while(1){
     mqtt_sender.send_sensor_information();
     delay(100);

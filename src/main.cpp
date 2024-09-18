@@ -1,19 +1,38 @@
 #include <Arduino.h>
 #include "tof_sensor.hpp"
+#include <PubSubClient.h>
+#include <WiFi.h>
+#include "mqtt_com.hpp"
 
-// put function declarations here:
-int myFunction(int, int);
+
+
+
+const char* ssid = "Not_Russian_spies";
+const char* password = "Diller123";
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+
+
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
+  WiFiClient espClient;
+  mqtt_com mqtt_sender(espClient);
+  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print('.');
+    delay(1000);
+  }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  while(!mqtt_sender.connect()){
+    Serial.println("gay");
+    delay(500);
+  }
+  Serial.println("efter connect");
+  while(1){
+    mqtt_sender.send_sensor_information();
+    delay(100);
+  }
 }

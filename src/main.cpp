@@ -3,11 +3,13 @@
 #include <PubSubClient.h>
 #include <WiFi.h>
 #include "mqtt_com.hpp"
+#include "mqtt_client.hpp"
 
 
 ToF sensor1;
 const char* ssid = "Not_Russian_spies";
 const char* password = "Diller123";
+const char* mqtt_server = "192.168.163.180"; //Denne skal muligvis ændres hvis den får ny IP
 
 
 void handleInterrupt() {
@@ -20,6 +22,7 @@ void setup() {
     Wire.begin(21, 22);  // Bruger SDA pin 21 og SCL pin 22
     
     pinMode(2, INPUT);
+    mqtt_setup();
 
   // Opsæt interrupt på pin 2: CHANGE betyder, at ISR udløses ved både HIGH->LOW og LOW->HIGH
   attachInterrupt(digitalPinToInterrupt(2), handleInterrupt, RISING);

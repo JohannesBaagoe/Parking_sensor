@@ -6,6 +6,9 @@
 #include <driver/rtc_io.h>
 
 RTC_DATA_ATTR bool lastState = false;
+#include <queue>
+
+#define NUM_OF_SENSORS 1
 
 ToF sensor1;
 const char* ssid = "Not_Russian_spies";
@@ -89,10 +92,6 @@ void loop(){}
 
 /*void loop() {
 
-    WiFiClient espClient;
-    mqtt_com mqtt_sender(espClient);
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
 
     while (WiFi.status() != WL_CONNECTED) {
       Serial.print('.');

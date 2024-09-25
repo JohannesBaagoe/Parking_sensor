@@ -10,7 +10,7 @@
         }
 
 
-        VL53L0X_Error status = lox.setGpioConfig(VL53L0X_DEVICEMODE_CONTINUOUS_RANGING, VL53L0X_GPIOFUNCTIONALITY_THRESHOLD_CROSSED_HIGH, VL53L0X_INTERRUPTPOLARITY_HIGH);
+        VL53L0X_Error status = lox.setGpioConfig(VL53L0X_DEVICEMODE_CONTINUOUS_RANGING, VL53L0X_GPIOFUNCTIONALITY_THRESHOLD_CROSSED_OUT, VL53L0X_INTERRUPTPOLARITY_HIGH);
         //FixPoint1616_t low = (int)100*(1<<16);
         //FixPoint1616_t high = (int)1000*(1<<16);
        /*VL53L0X_Error status =  lox.setInterruptThresholds(low, high, true);

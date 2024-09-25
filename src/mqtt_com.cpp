@@ -10,7 +10,12 @@ bool mqtt_com::connect(){
     return true;
 }
 
-bool mqtt_com::send_sensor_information(){
-    client.publish("Sensor2","true");
+bool mqtt_com::send_sensor_information(bool input){
+    if(input == true){
+        client.publish("Sensor1","true");
+    }
+    else{
+        client.publish("Sensor1","false");
+    }
     return true;
 }

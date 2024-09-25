@@ -9,7 +9,7 @@ class mqtt_com{
     public:
         mqtt_com(WiFiClient);
         uint16_t get_sensor_id();
-        bool send_sensor_information();
+        bool send_sensor_information(bool input);
         bool connect();
         PubSubClient client;
 

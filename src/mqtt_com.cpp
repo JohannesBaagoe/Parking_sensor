@@ -1,12 +1,12 @@
 #include "mqtt_com.hpp"
-#include <WiFiClientSecure.h>
+#include <WiFiClient.h>
 
-mqtt_com::mqtt_com(WiFiClientSecure wifi_connection) : client(wifi_connection){
+mqtt_com::mqtt_com(WiFiClient wifi_connection) : client(wifi_connection){
     
 }
 
 bool mqtt_com::connect(){
-    client.setServer("192.168.1.180", 1884);
+    client.setServer("192.168.254.180", 1883);
     if (client.connect("Device1", "parking_broker", "123456")) {
         Serial.println("Connected to MQTT broker");
         Serial.println(client.state());

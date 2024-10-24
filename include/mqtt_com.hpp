@@ -4,11 +4,11 @@
 #include <stdint.h>
 #include <PubSubClient.h>
 #include <WiFi.h>
-#include <WiFiClientSecure.h>
+#include <WiFiClient.h>
 
 class mqtt_com{
     public:
-        mqtt_com(WiFiClientSecure);
+        mqtt_com(WiFiClient);
         uint16_t get_sensor_id();
         bool send_sensor_information(bool newState);
         bool connect();

@@ -7,7 +7,7 @@ mqtt_com::mqtt_com(WiFiClient wifi_connection) : client(wifi_connection){
 
 bool mqtt_com::connect(){
     client.setServer("192.168.241.180", 1883);
-    if (client.connect("Device1", "parking_broker", "123456")) {
+    if (client.connect("Device2", "parking_broker", "123456")) {
         Serial.println("Connected to MQTT broker");
         Serial.println(client.state());
         return true;
@@ -22,16 +22,9 @@ bool mqtt_com::send_sensor_information(bool newState){
 
     bool result;
     if(newState == true){
-        result = client.publish("Sensor2","true");
+        result = client.publish("Sensor2", "true", false);
     }else {
-        result = client.publish("Sensor2","false");
-    }
-
-    delay(100);
-    if(newState == true){
-        result = client.publish("Sensor2","true");
-    }else {
-        result = client.publish("Sensor2","false");
+        result = client.publish("Sensor2","false", false);
     }
 
     if (result) {

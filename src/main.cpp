@@ -73,11 +73,12 @@ void setup() {
   WiFi.begin(ssid, password);
 
   // Wait for Wi-Fi to connect
+   Serial.print("\nConnecting");
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print('.');
     delay(100);
   }
-  Serial.println("\nConnected to WiFi");
+  Serial.println("\n\rConnected");
 
   WiFiClient espClient;
   // espClient.setCACert(ca_cert);
@@ -89,10 +90,10 @@ void setup() {
   // Attempt to connect to the MQTT server
   while (!mqtt_sender.connect()) {
     Serial.println("Trying to connect to server");
-    delay(100);
+    //delay(100);
   }
 
-  Wire.begin(21, 22, 100000); // Brug SDA=21 og SCL=22 med hastighed 100kHz
+  Wire.begin(21, 22, 400000); // Brug SDA=21 og SCL=22 med hastighed 400kHz
 
   pinMode(VL53LOX_ShutdownPin, OUTPUT);
   pinMode(VL53LOX_InterruptPin, INPUT_PULLUP);
@@ -113,7 +114,7 @@ void setup() {
   sensor.SetInteruptThresholds(200, 300);
 
   // Aktivér kontinuerlig målingstilstand
-  Serial.println("Set Mode VL53L0X_DEVICEMODE_CONTINUOUS_RANGING... ");
+  //Serial.println("Set Mode VL53L0X_DEVICEMODE_CONTINUOUS_RANGING... ");
   lox.setDeviceMode(VL53L0X_DEVICEMODE_CONTINUOUS_TIMED_RANGING, false);
 
   // start mesurement

@@ -30,7 +30,7 @@ void setup() {
 
   Serial.println("Awake");
 
-  Wire.begin(21, 22, 100000); // Brug SDA=21 og SCL=22 med hastighed 400kHz
+  Wire.begin(21, 22, 100000); // Brug SDA=21 og SCL=22 med hastighed 100kHz
 
   pinMode(VL53LOX_ShutdownPin, OUTPUT);
   pinMode(VL53LOX_InterruptPin, INPUT_PULLUP);

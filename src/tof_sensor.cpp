@@ -17,19 +17,19 @@
         }
         // Indstil GPIO konfiguration for interrupt
         VL53L0X_Error status;
-        if (lastState == false){
-            Serial.println("Set GPIO Config so if range is lower the LowThreshold trigger Gpio Pin ");
+        if (lastState == true){
+            //Serial.println("Set GPIO Config so if range is lower the LowThreshold trigger Gpio Pin ");
             status = lox.setGpioConfig(VL53L0X_DEVICEMODE_CONTINUOUS_TIMED_RANGING,
                       VL53L0X_GPIOFUNCTIONALITY_THRESHOLD_CROSSED_LOW,
                       VL53L0X_INTERRUPTPOLARITY_LOW);
-            lastState = true;
+            lastState = false;
         } 
-        else if(lastState == true){
-            Serial.println("Set GPIO Config so if range is higher than HighThreshold trigger Gpio Pin ");
+        else if(lastState == false){
+            //Serial.println("Set GPIO Config so if range is higher than HighThreshold trigger Gpio Pin ");
             status = lox.setGpioConfig(VL53L0X_DEVICEMODE_CONTINUOUS_TIMED_RANGING,
                         VL53L0X_GPIOFUNCTIONALITY_THRESHOLD_CROSSED_HIGH,
                         VL53L0X_INTERRUPTPOLARITY_LOW);
-            lastState = false;
+            lastState = true;
         }
         
         if (status != VL53L0X_ERROR_NONE) {

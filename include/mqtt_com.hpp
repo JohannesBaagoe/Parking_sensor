@@ -1,10 +1,9 @@
 #ifndef MQTT_COM_H
-#define MQTT_COM_H
 
 #include <stdint.h>
 #include <PubSubClient.h>
 #include <WiFi.h>
-#include <WiFiClient.h>
+#include <WiFiClientSecure.h>
 
 class mqtt_com{
     public:

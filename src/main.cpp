@@ -10,6 +10,7 @@
 #include <WiFiClient.h>
 
 RTC_DATA_ATTR bool lastState = false;
+RTC_DATA_ATTR int num = 0;
 const int VL53LOX_InterruptPin = 13;
 #define SENSOR_INTERRUPT_PIN 13  // Eksempel GPIO-pin
 const gpio_num_t interruptPin = static_cast<gpio_num_t>(SENSOR_INTERRUPT_PIN);
@@ -32,7 +33,7 @@ const char* mqtt_port = "1883";
 // const char* ca_cert = "cert/ca_cert.pem";
 // const char* client_cert = "cert/client_mqtt_cert.pem";
 // const char* client_key = "cert/client_mqtt_key.pem";
-const char* mqtt_server = "192.168.241.180";  // e.g., "broker.hivemq.com" or your local broker
+const char* mqtt_server = "192.168.154.180";  // e.g., "broker.hivemq.com" or your local broker
 
 // const char* ca_cert = \
 // "-----BEGIN CERTIFICATE-----\n" \
@@ -67,17 +68,43 @@ const char* mqtt_server = "192.168.241.180";  // e.g., "broker.hivemq.com" or yo
 // "8qeOB2Nl+okHBHsUuLN1EXJYa/A45EnhRQ==\n" \
 // "-----END EC PRIVATE KEY-----\n";
 
+void startHiberNation(){
+        //esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
+        //esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
+        esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_OFF);
+        esp_sleep_pd_config(ESP_PD_DOMAIN_RTC8M, ESP_PD_OPTION_OFF);
+        esp_sleep_pd_config(ESP_PD_DOMAIN_VDDSDIO, ESP_PD_OPTION_OFF);
+        esp_sleep_pd_config(ESP_PD_DOMAIN_MAX, ESP_PD_OPTION_OFF);
+        
+        esp_deep_sleep_start();
+    }
+
 void setup() {
   Serial.begin(115200);
+  // Sæt Wi-Fi i station-tilstand og begynd at forbinde
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
-  // Wait for Wi-Fi to connect
-   Serial.print("\nConnecting");
+  // Timeout-variabler
+  unsigned long startAttemptTime = millis();
+  const unsigned long timeout = 5000; // 5 sekunder
+
+  Serial.print("\nConnecting");
+
+  // Vent på Wi-Fi-forbindelse eller timeout
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print('.');
     delay(100);
+
+    // Tjek for timeout
+    if (millis() - startAttemptTime > timeout) {
+      Serial.println("\nWi-Fi-forbindelse fejlede. Sover igen");
+      //ESP.restart(); // Genstart ESP32
+      esp_sleep_enable_timer_wakeup(5000000);
+      startHiberNation();
+    }
   }
+
   Serial.println("\n\rConnected");
 
   WiFiClient espClient;
@@ -102,13 +129,18 @@ void setup() {
   lastState = sensor.init(lastState, VL53LOX_ShutdownPin);
 
   // Send sensor information
-  mqtt_sender.send_sensor_information(lastState);
+  //mqtt_sender.send_sensor_information(lastState);
+
+  num = mqtt_sender.testSend(num);
+
+  Serial.println("Antal beskeder sendt");
+  Serial.println(num);
   
-  if (lastState == false){
+  /*if (lastState == false){
       Serial.println("Sends false");
   }else {
     Serial.println("Sends true");
-  }
+  }*/
   
   // set thresholds
   sensor.SetInteruptThresholds(200, 300);
@@ -118,16 +150,18 @@ void setup() {
   lox.setDeviceMode(VL53L0X_DEVICEMODE_CONTINUOUS_TIMED_RANGING, false);
 
   // start mesurement
-  sensor.startRangeContinuous(100, 10000);
+  sensor.startRangeContinuous(100, 100000);
 
   //Serial.println("Attach interrupt");
   //attachInterrupt(VL53LOX_InterruptPin, VL53LOXISR, CHANGE);
 
   // Sæt ESP32 i deep sleep indtil interrupt
-  esp_sleep_enable_ext0_wakeup(interruptPin, 0); // Wake up on low signal
+  //esp_sleep_enable_ext0_wakeup(interruptPin, 0); // Wake up on low signal
+  esp_sleep_enable_timer_wakeup(5000000);
   
   Serial.println("Going to sleep...\n\n");
-  sensor.startHiberNation();
+  startHiberNation();
+  //esp_deep_sleep_start();
 }
 
 void loop() {

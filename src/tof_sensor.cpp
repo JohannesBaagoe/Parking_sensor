@@ -8,11 +8,11 @@
        // Hvis lox.begin fejler, skyldes det muligvis, at sensoren er i
         // kontinuerlig målingstilstand. Vi nulstiller enheden.
         while (!lox.begin()) {
-            Serial.println(F("Failed to boot VL53L0X"));
+            //Serial.println(F("Failed to boot VL53L0X"));
             digitalWrite(VL53LOX_ShutdownPin, LOW);
             delay(100);
             digitalWrite(VL53LOX_ShutdownPin, HIGH);
-            Serial.println("Adafruit VL53L0X XShut set high to Allow Boot");
+            //Serial.println("Adafruit VL53L0X XShut set high to Allow Boot");
             delay(100);
         }
         // Indstil GPIO konfiguration for interrupt
@@ -55,13 +55,13 @@
         // Indstil interrupt thresholds
         FixPoint1616_t LowThreshold = (low_thres * 65536.0);
         FixPoint1616_t HighThreshold = (high_thres * 65536.0);
-        Serial.println("Set Interrupt Thresholds... ");
+        //Serial.println("Set Interrupt Thresholds... ");
         VL53L0X_Error status = lox.setInterruptThresholds(LowThreshold, HighThreshold, true);
 
         if (status != VL53L0X_ERROR_NONE) {
             Serial.println(F("Fejl ved indstilling af Thresholds"));
         } else{
-            Serial.println("Det lykkedes at indstille Thresholds");
+            //Serial.println("Det lykkedes at indstille Thresholds");
         }
 
         return status;
@@ -74,19 +74,6 @@
 
     void ToF::startRangeContinuous(int miliSec, int microSec){
         lox.setMeasurementTimingBudgetMicroSeconds(microSec);
-        Serial.println("StartMeasurement... ");
+        //Serial.println("StartMeasurement... ");
         lox.startRangeContinuous(miliSec);
-    }
-
-    void ToF::startHiberNation(){
-
-        //esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
-        esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
-        esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_OFF);
-        esp_sleep_pd_config(ESP_PD_DOMAIN_RTC8M, ESP_PD_OPTION_OFF);
-        esp_sleep_pd_config(ESP_PD_DOMAIN_VDDSDIO, ESP_PD_OPTION_OFF);
-        esp_sleep_pd_config(ESP_PD_DOMAIN_MAX, ESP_PD_OPTION_OFF);
-
-        esp_deep_sleep_start();
-
     }

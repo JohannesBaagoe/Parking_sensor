@@ -12,5 +12,4 @@ class ToF{
         VL53L0X_Error SetInteruptThresholds(int low_thres, int high_thres); // skal være i mm
         void clearInterrupt();
         void startRangeContinuous(int ms, int microSec);
-        void startHiberNation();
 };

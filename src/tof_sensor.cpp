@@ -1,36 +1,47 @@
 #include "tof_sensor.hpp"
 #include <Wire.h>
 
-    ToF::ToF() {
-    };
 
-    ToF::ToF(int num) : lox() {
-        if (!lox.begin()) {
-            Serial.println(F("Failed to boot VL53L0X"));
+    ToF::ToF() :lox(){}
+
+    bool ToF::init(bool lastState, byte VL53LOX_ShutdownPin) {
+       // Hvis lox.begin fejler, skyldes det muligvis, at sensoren er i
+        // kontinuerlig målingstilstand. Vi nulstiller enheden.
+        while (!lox.begin()) {
+            //Serial.println(F("Failed to boot VL53L0X"));
+            digitalWrite(VL53LOX_ShutdownPin, LOW);
+            delay(100);
+            digitalWrite(VL53LOX_ShutdownPin, HIGH);
+            //Serial.println("Adafruit VL53L0X XShut set high to Allow Boot");
+            delay(100);
+        }
+        // Indstil GPIO konfiguration for interrupt
+        VL53L0X_Error status;
+        if (lastState == true){
+            //Serial.println("Set GPIO Config so if range is lower the LowThreshold trigger Gpio Pin ");
+            status = lox.setGpioConfig(VL53L0X_DEVICEMODE_CONTINUOUS_TIMED_RANGING,
+                      VL53L0X_GPIOFUNCTIONALITY_THRESHOLD_CROSSED_LOW,
+                      VL53L0X_INTERRUPTPOLARITY_LOW);
+            lastState = false;
+        } 
+        else if(lastState == false){
+            //Serial.println("Set GPIO Config so if range is higher than HighThreshold trigger Gpio Pin ");
+            status = lox.setGpioConfig(VL53L0X_DEVICEMODE_CONTINUOUS_TIMED_RANGING,
+                        VL53L0X_GPIOFUNCTIONALITY_THRESHOLD_CROSSED_HIGH,
+                        VL53L0X_INTERRUPTPOLARITY_LOW);
+            lastState = true;
+        }
+        
+        if (status != VL53L0X_ERROR_NONE) {
+            Serial.println(F("Fejl ved indstilling af GPIO-konfiguration!"));
         }
 
+        return lastState;
 
-        VL53L0X_Error status = lox.setGpioConfig(VL53L0X_DEVICEMODE_CONTINUOUS_RANGING, VL53L0X_GPIOFUNCTIONALITY_THRESHOLD_CROSSED_OUT, VL53L0X_INTERRUPTPOLARITY_HIGH);
-        //FixPoint1616_t low = (int)100*(1<<16);
-        //FixPoint1616_t high = (int)1000*(1<<16);
-       /*VL53L0X_Error status =  lox.setInterruptThresholds(low, high, true);
-
-        if(status == VL53L0X_ERROR_NONE){
-            Serial.println("Lykkedes");
-        }else{
-            Serial.println("fejl");
-        }*/ 
-
-        //lox.setDeviceMode(VL53L0X_DEVICEMODE_CONTINUOUS_RANGING, true);
-
-        //lox.startRangeContinuous();
-
-        //lox.startMeasurement(true);
-    }
+    } 
+    
     
     uint16_t ToF::getMeasurement(){
-
-        //lox.rangingTest(&measure, false);
 
         if (lox.isRangeComplete()) {
             return lox.readRange();
@@ -39,13 +50,19 @@
         }
     };
 
-
     VL53L0X_Error ToF::SetInteruptThresholds(int low_thres, int high_thres){ // skal være i mm
 
-        FixPoint1616_t low = (int)low_thres*(1<<16);
-        FixPoint1616_t high = (int)high_thres*(1<<16);
+        // Indstil interrupt thresholds
+        FixPoint1616_t LowThreshold = (low_thres * 65536.0);
+        FixPoint1616_t HighThreshold = (high_thres * 65536.0);
+        //Serial.println("Set Interrupt Thresholds... ");
+        VL53L0X_Error status = lox.setInterruptThresholds(LowThreshold, HighThreshold, true);
 
-        VL53L0X_Error status = lox.setInterruptThresholds(low, high, false);
+        if (status != VL53L0X_ERROR_NONE) {
+            Serial.println(F("Fejl ved indstilling af Thresholds"));
+        } else{
+            //Serial.println("Det lykkedes at indstille Thresholds");
+        }
 
         return status;
 
@@ -53,4 +70,10 @@
 
     void ToF::clearInterrupt(){
         lox.clearInterruptMask(false);
+    }
+
+    void ToF::startRangeContinuous(int miliSec, int microSec){
+        lox.setMeasurementTimingBudgetMicroSeconds(microSec);
+        //Serial.println("StartMeasurement... ");
+        lox.startRangeContinuous(miliSec);
     }

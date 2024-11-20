@@ -7,8 +7,9 @@ class ToF{
 
     public:
         ToF();
-        ToF(int num);
+        bool init(bool lastState, byte VL53LOX_ShutdownPin);
         uint16_t getMeasurement();
         VL53L0X_Error SetInteruptThresholds(int low_thres, int high_thres); // skal være i mm
         void clearInterrupt();
+        void startRangeContinuous(int ms, int microSec);
 };

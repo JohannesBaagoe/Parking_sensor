@@ -1,0 +1,166 @@
+#include <Arduino.h>
+#include "tof_sensor.hpp"
+#include <PubSubClient.h>
+#include <WiFi.h>
+#include "mqtt_com.hpp"
+#include "mqtt_client.hpp"
+#include <driver/rtc_io.h>
+#include <WiFiClientSecure.h>
+
+RTC_DATA_ATTR bool lastState = false;
+RTC_DATA_ATTR int initsens = 0;
+#include <queue>
+
+#define NUM_OF_SENSORS 1
+
+ToF sensor1;
+const char* ssid = "Not_Russian_spies";
+const char* password = "Diller123";
+
+//const char* certPath = "../cert/ca_cert.pem"; // dette skal udfyldes når der er kommet et certifikat.
+
+//FILE certPath = "C:/Users/Bruger/Desktop/IoT/Parking_sensor/cert/ca_cert.pem";
+
+//const char* brokerIP = "192.168.1.180";
+//IPAddress brokerIP(192, 168, 246, 180);
+//const uint16_t brokerPort = 8883;
+
+
+
+void setup() {
+    Serial.begin(115200);
+
+    
+    //WiFiClientSecure espClient;
+    WiFiClient espClient;
+   /* const char* ca_cert =
+    "-----BEGIN CERTIFICATE-----\n"
+"MIIBtTCCAVugAwIBAgIUJ2z8SUJUZklRusoL4NvMh34LSHswCgYIKoZIzj0EAwIwMDELMAkGA1UEBhMCREsxDzANBgNVBAcMBkFhcmh1czEQMA4GA1UEAwwHc2Vuc29yMTAeFw0yNDEwMDIxMDU0MzJaFw0yNTEwMDIxMDU0MzJaMDAxCzAJBgNVBAYTAkRLMQ8wDQYDVQQHDAZBYXJodXMxEDAOBgNVBAMMB3NlbnNvcjEwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAShuLVEhm4ZUaNqPUQIF34M9tyr824BYVbhJqZfciC585iM61Nu4dZ/WS+YmYzcHMKBL2XCG4Rg3I0lHVarnTHuo1MwUTAdBgNVHQ4EFgQU3jj3Ket6k7/a9xQ3bZV0gSp9V2EwHwYDVR0jBBgwFoAU3jj3Ket6k7/a9xQ3bZV0gSp9V2EwDwYDVR0TAQH/BAUwAwEB/zAKBggqhkjOPQQDAgNIADBFAiB4qQaK6o5UlN9F5OrhkVdpSDvQzQgjjx6Su4LhQ4Uc7QIhAOKiJs/DOGs54A2fvRAQkB7W0dbK5X+5gX53azMU3AFZ\n"
+"-----END CERTIFICATE-----\n";
+
+const char* server_cert =
+"-----BEGIN CERTIFICATE-----\n"
+"MIIBWzCCAQECFDKy/r0Ktd8d6EVq1doJ1wrtgW2DMAoGCCqGSM49BAMCMDAxCzAJBgNVBAYTAkRLMQ8wDQYDVQQHDAZBYXJodXMxEDAOBgNVBAMMB3NlbnNvcjEwHhcNMjQxMDAyMTA1ODM3WhcNMjcwNjI5MTA1ODM3WjAwMQswCQYDVQQGEwJESzEPMA0GA1UEBwwGQWFyaHVzMRAwDgYDVQQDDAdzZW5zb3IyMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEBDigMtV2LSJqoN9zJp+BqpEiuLDovwFtz9sUiAX+9Ig0NcWXKSiI8qeOB2Nl+okHBHsUuLN1EXJYa/A45EnhRTAKBggqhkjOPQQDAgNIADBFAiEAg9As29iErtbngM+PoZy+n81ehVXOHQS92Hy3Sr+Ma+YCIEW5QQVNmAwNOLlKxEcFZkzWwcgPmF+SnLlu4BN9A/H1\n"
+"-----END CERTIFICATE-----\n";
+
+const char* server_key =
+"-----BEGIN EC PRIVATE KEY-----\n"
+"MHcCAQEEICIB1sLKnJUCZdo05LDXGB9IIBgXIgV0XcRJXH0l6atMoAoGCCqGSM49AwEHoUQDQgAEBDigMtV2LSJqoN9zJp+BqpEiuLDovwFtz9sUiAX+9Ig0NcWXKSiI8qeOB2Nl+okHBHsUuLN1EXJYa/A45EnhRQ==\n"
+"-----END EC PRIVATE KEY-----\n"; */
+
+
+
+  //espClient.setCACert(ca_cert);
+  //espClient.setCertificate(server_cert);  // for client verification
+  //espClient.setPrivateKey(server_key);    // for client verification
+    
+
+    mqtt_com mqtt_sender(espClient);
+
+
+
+    //Serial.println(WiFi.localIP()); // Print the local IP address
+    
+        
+        if (initsens == 2){
+          Serial.println("stor fed pik");
+        }
+
+        sensor1 = ToF(initsens);
+        VL53L0X_Error status = sensor1.SetInteruptThresholds(100, 200);
+        
+      
+
+      Serial.print("Distance (mm): ");
+      uint16_t distance = sensor1.getMeasurement();
+      Serial.println(distance);
+
+      uint16_t threshold = 200;
+
+    
+    //mqtt_connect(espClient, brokerIP, brokerPort);
+
+    /*if(!espClient.connect(brokerIP, brokerPort, nullptr, ca_cert, server_cert, server_key)){
+    Serial.println("Kunne ikke oprette forbindelse til broker!");
+    }*/
+
+    if(distance <= threshold && lastState != true){
+      
+      setup_wifi(ssid, password);
+
+      while(!mqtt_sender.connect()){
+        Serial.println("Trying to connect to server");
+        delay(100);
+      }
+
+        mqtt_sender.send_sensor_information(true, ssid, password, mqtt_sender);
+        lastState = true;
+        Serial.println("Sends true");
+    }
+    else if(distance > threshold && lastState != false){
+      setup_wifi(ssid, password);
+
+    while(!mqtt_sender.connect()){
+      Serial.println("Trying to connect to server");
+      delay(100);
+    }
+      mqtt_sender.send_sensor_information(false, ssid, password, mqtt_sender);
+      lastState = false;
+      Serial.println("sends false");
+    }else{
+      Serial.println("sends nothing");
+    }
+    
+    // Angiv en timer til at vågne op efter 10 sekunder
+    esp_sleep_enable_timer_wakeup(10 * 1000000); // 10 sekunder
+
+
+    Serial.println("Sleep");
+    WiFi.disconnect();
+    WiFi.mode(WIFI_OFF);
+    // Hvis Bluetooth er aktiveret, sluk for det
+    btStop();  
+    // Deaktiver RTC komponenter
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_OFF);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC8M, ESP_PD_OPTION_OFF);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_VDDSDIO, ESP_PD_OPTION_OFF);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_MAX, ESP_PD_OPTION_OFF);
+    
+    // Gå i deep sleep
+    esp_deep_sleep_start();
+}
+
+void loop(){}
+
+/*void loop() {
+
+
+    while (WiFi.status() != WL_CONNECTED) {
+      Serial.print('.');
+      delay(1000);
+    }
+    while(!mqtt_sender.connect()){
+      Serial.println("Trying to connect to server");
+      delay(500);
+    }
+
+    sensor1 = ToF(1);
+
+    if(sensor1.SetInteruptThresholds(400, 500) == VL53L0X_ERROR_NONE){
+      Serial.println("Lykkedes pik");
+    }else{
+      Serial.print("Error pik");
+    }
+  
+    while(1){
+      
+      Serial.print("Distance (mm): ");
+      uint16_t distance = sensor1.getMeasurement();
+      Serial.println(distance);
+      mqtt_sender.send_sensor_information();
+      delay(100);
+
+    }
+}*/

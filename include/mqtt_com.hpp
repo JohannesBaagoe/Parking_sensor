@@ -12,7 +12,7 @@ class mqtt_com{
         bool send_sensor_information(bool newState);
         bool connect();
         PubSubClient client;
-        int testSend(int num);
+        int testSend(uint16_t num);
 
     private:
         uint16_t sensor_id;

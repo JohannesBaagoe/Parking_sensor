@@ -36,7 +36,7 @@ bool mqtt_com::send_sensor_information(bool newState){
     return newState;
 }
 
-int mqtt_com::testSend(int num){
+int mqtt_com::testSend(uint16_t num){
 
     bool result;
      result = client.publish("Sensor2", "true", false);

@@ -10,7 +10,7 @@
 #include <WiFiClient.h>
 
 RTC_DATA_ATTR bool lastState = false;
-RTC_DATA_ATTR int num = 0;
+RTC_DATA_ATTR uint16_t num = 65535;
 const int VL53LOX_InterruptPin = 13;
 #define SENSOR_INTERRUPT_PIN 13  // Eksempel GPIO-pin
 const gpio_num_t interruptPin = static_cast<gpio_num_t>(SENSOR_INTERRUPT_PIN);

@@ -5,27 +5,23 @@
     ToF::ToF() :lox(){}
 
     bool ToF::init(bool lastState, byte VL53LOX_ShutdownPin) {
-       // Hvis lox.begin fejler, skyldes det muligvis, at sensoren er i
-        // kontinuerlig målingstilstand. Vi nulstiller enheden.
         while (!lox.begin()) {
-            //Serial.println(F("Failed to boot VL53L0X"));
             digitalWrite(VL53LOX_ShutdownPin, LOW);
             delay(100);
             digitalWrite(VL53LOX_ShutdownPin, HIGH);
-            //Serial.println("Adafruit VL53L0X XShut set high to Allow Boot");
             delay(100);
         }
-        // Indstil GPIO konfiguration for interrupt
+
         VL53L0X_Error status;
         if (lastState == true){
-            //Serial.println("Set GPIO Config so if range is lower the LowThreshold trigger Gpio Pin ");
+            Serial.println("Set GPIO Config so if range is lower the LowThreshold trigger Gpio Pin ");
             status = lox.setGpioConfig(VL53L0X_DEVICEMODE_CONTINUOUS_TIMED_RANGING,
                       VL53L0X_GPIOFUNCTIONALITY_THRESHOLD_CROSSED_LOW,
                       VL53L0X_INTERRUPTPOLARITY_LOW);
             lastState = false;
         } 
         else if(lastState == false){
-            //Serial.println("Set GPIO Config so if range is higher than HighThreshold trigger Gpio Pin ");
+            Serial.println("Set GPIO Config so if range is higher than HighThreshold trigger Gpio Pin ");
             status = lox.setGpioConfig(VL53L0X_DEVICEMODE_CONTINUOUS_TIMED_RANGING,
                         VL53L0X_GPIOFUNCTIONALITY_THRESHOLD_CROSSED_HIGH,
                         VL53L0X_INTERRUPTPOLARITY_LOW);
